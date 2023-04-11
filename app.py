@@ -52,6 +52,9 @@ if uploaded:
 
         im.save(STREAMLIT_STATIC_PATH / IMG1)
         ds = xr.open_rasterio(f.name)
+        ds[dict(band=0)] = numpy.asarray(im)[:,:,0]
+        ds[dict(band=1)] = numpy.asarray(im)[:,:,1]
+        ds[dict(band=2)] = numpy.asarray(im)[:,:,2]
         ds.rio.to_raster('input.tif')
 
         #st.image(im, caption=' ', channels='RGB')
@@ -66,16 +69,7 @@ if uploaded:
                     submitted = st.form_submit_button("Submit")
                 if submitted:
 
-                    # Split into 3 channels
-                    r, g, b = im.split()
-
-                    # Increase Reds
-                    r = r.point(lambda i: i * (brightness))
-                    g = g.point(lambda i: i * (brightness))
-                    b = b.point(lambda i: i * (brightness))
-
                     # Recombine back to RGB image
-                    im = Image.merge('RGB', (r, g, b))
                     im = numpy.asarray(im)
                     shape_x, shape_y, shape_z = im.shape
                     image_2d = im.reshape(shape_x*shape_y, shape_z)
