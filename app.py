@@ -13,6 +13,7 @@ import PIL
 import uuid
 import rioxarray as xr
 
+
 STREAMLIT_STATIC_PATH = (
     pathlib.Path(st.__path__[0]) / "static"
 )  # at venv/lib/python3.9/site-packages/streamlit/static
@@ -24,6 +25,8 @@ with st.sidebar:
     st.subheader("Quick changes")
     brightness = st.slider('Brightness', 0.0, 5.0, 1.0, 0.01)
     constrast = st.slider('Contrast', 0.0, 3.0, 1.0, 0.01)
+    color = st.slider('Color', 0.0, 3.0, 1.0, 0.01)
+    sharpness = st.slider('Sharpness', 0.0, 3.0, 1.0, 0.01)
 
 IMG1 = str(uuid.uuid1()) + ".png"
 IMG2 = str(uuid.uuid1()) + ".png"
@@ -38,12 +41,15 @@ if uploaded:
         enhancer = ImageEnhance.Contrast(im)
         im = enhancer.enhance(constrast)
 
+        enhancer = ImageEnhance.Color(im)
+        im = enhancer.enhance(color)
 
-        r, g, b = im.split()
-        r = r.point(lambda i: i * (brightness))
-        g = g.point(lambda i: i * (brightness))
-        b = b.point(lambda i: i * (brightness))
-        im = Image.merge('RGB', (r, g, b))
+        enhancer = ImageEnhance.Sharpness(im)
+        im = enhancer.enhance(sharpness)
+
+        enhancer = ImageEnhance.Brightness(im)
+        im = enhancer.enhance(brightness)
+
         im.save(STREAMLIT_STATIC_PATH / IMG1)
         ds = xr.open_rasterio(f.name)
         ds.rio.to_raster('input.tif')
@@ -54,7 +60,10 @@ if uploaded:
             with st.form("my_form"):
                 st.subheader("Run clustering")
                 n_k = st.slider('Indicate number of clusters', 2, 20, 4, 1)
-                submitted = st.form_submit_button("Submit")
+
+                col1, col2, col3 = st.columns(3)
+                with col2:
+                    submitted = st.form_submit_button("Submit")
                 if submitted:
 
                     # Split into 3 channels
@@ -94,6 +103,20 @@ if uploaded:
 
         if generate_output:
             juxtapose(IMG1, IMG2, 1500)
+            with st.sidebar:
+                col1, col2, col3 = st.columns(3)
+                with open("output.tif", "rb") as fp:
+
+                    with col2:
+                        btn = st.download_button(
+                            label="Download output",
+                            data=fp,
+                            file_name="output.tif",
+                            mime="image/GeoTIFF"
+                        )
+
+
+
         else:
             st.image(im)
 

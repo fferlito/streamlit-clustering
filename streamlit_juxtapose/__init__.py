@@ -35,19 +35,19 @@ def juxtapose(img1: str, img2: str, height: int = 1000):  # data
                     src: "'''
         + img1
         + '''",
-                    label: 'img1',
+                    label: 'Input',
                 },
                 {
                     src: "'''
         + img2
         + """",
-                    label: 'img2',
+                    label: 'Output',
                 }
             ],
             {
                 animate: true,
                 showLabels: true,
-                showCredits: true,
+                showCredits: false,
                 startingPosition: "50%",
                 makeResponsive: true
             });
